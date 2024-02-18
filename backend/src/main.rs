@@ -1,13 +1,15 @@
 use actix_web::{
     get,
+    http,
     patch,
     post,
-    web::{ Json, Path, Data },
+    web::{ Data, Json, Path },
     App,
     HttpResponse,
     HttpServer,
     Responder,
 };
+use actix_cors::Cors;
 use validator::Validate;
 use uuid::{ self };
 // models
@@ -65,14 +67,40 @@ async fn main() -> std::io::Result<()> {
     let db = Database::init().await.expect("error in database");
     db.add_dummy_pizza().await; // adding dummy list of pizzas
     let db_data = Data::new(db);
+
     // creating a basic server
-    HttpServer::new(move || {
+    let server_actions = HttpServer::new(move || {
+        // getting cors permission for localhost endpoint access
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:4200")
+            .allowed_origin_fn(|origin, _req_head| {
+                origin.as_bytes().ends_with(b".rust-lang.org")
+            })
+            // the methods need to be allowed here in order for axios in the frontend to access it
+            .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
             .app_data(db_data.clone()) // allows end point routes connection also
+            .wrap(cors)
             .service(get_pizzas)
             .service(update_pizza)
             .service(buy_pizza)
     })
         .bind("127.0.0.1:8080")?
-        .run().await
+        .run().await;
+
+    // server actions need to return something that allows a result to be returned
+    match server_actions {
+        Ok(_) => {
+            println!("Server running in localhost 8080");
+            Ok(())
+        }
+        Err(err) => {
+            println!("Failed to run server");
+            Err(err)
+        }
+    }
 }
