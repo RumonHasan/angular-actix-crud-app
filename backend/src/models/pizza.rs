@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 use validator::Validate;
 
 #[derive(Validate, Serialize, Deserialize)]
+// validator when the pizza comes from the frontend request
 pub struct BuyPizzaRequest{
     // validator crate for checking whether its a valid pizza name or not
     #[validate(length(min = 5, message = "pizza name required"))]
@@ -23,7 +24,7 @@ pub struct Pizza{
 }
 
 impl Pizza{
-    // creating a new pizza
+    // just returns a new pizza
     pub fn new_pizza(uuid: String, pizza_name: String)-> Pizza{
         Pizza{
             uuid,

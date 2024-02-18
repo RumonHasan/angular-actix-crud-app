@@ -9,13 +9,14 @@ use actix_web::{
     Responder,
 };
 use validator::Validate;
+use uuid::{ self };
 // models
 mod models;
 mod db;
 // conneting to db
 use crate::db::Database;
 // connecting to pizza model
-use crate::models::{ BuyPizzaRequest, UpdatePizzaUrl };
+use crate::models::{ BuyPizzaRequest, UpdatePizzaUrl, Pizza };
 
 // getting pizzas
 #[get("/pizzas")]
@@ -30,13 +31,22 @@ async fn get_pizzas(db: Data<Database>) -> impl Responder {
 
 // post pizzas
 #[post("/buy")]
-async fn buy_pizza(body: Json<BuyPizzaRequest>) -> impl Responder {
+async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Responder {
     let is_valid = body.validate();
     match is_valid {
         Ok(_) => {
             let pizza_name = body.pizza_name.clone();
-            println!("{}", pizza_name);
-            HttpResponse::Ok().body(format!("pizza entered is {pizza_name}"))
+            let mut buffer = uuid::Uuid::encode_buffer();
+            let new_uuid = uuid::Uuid::new_v4().simple().encode_lower(&mut buffer);
+            let new_pizza = db.add_pizza(
+                Pizza::new_pizza(String::from(new_uuid), pizza_name)
+            ).await;
+            match new_pizza {
+                Some(created) => {
+                    HttpResponse::Ok().body(format!("Created New Pizza, {:?}", created))
+                }
+                None => HttpResponse::Ok().body("Error buying em"),
+            }
         }
         Err(_) => { HttpResponse::Ok().body("pizza name is required") }
     }
@@ -53,6 +63,7 @@ async fn update_pizza(update_pizza_url: Path<UpdatePizzaUrl>) -> impl Responder 
 async fn main() -> std::io::Result<()> {
     // initialising a new database
     let db = Database::init().await.expect("error in database");
+    db.add_dummy_pizza().await; // adding dummy list of pizzas
     let db_data = Data::new(db);
     // creating a basic server
     HttpServer::new(move || {
