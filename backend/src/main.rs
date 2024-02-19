@@ -1,13 +1,5 @@
 use actix_web::{
-    get,
-    http,
-    patch,
-    post,
-    web::{ Data, Json, Path },
-    App,
-    HttpResponse,
-    HttpServer,
-    Responder,
+    delete, get, http, patch, post, web::{ self, Data, Json, Path }, App, HttpResponse, HttpServer, Responder
 };
 use actix_cors::Cors;
 use validator::Validate;
@@ -19,6 +11,7 @@ mod db;
 use crate::db::Database;
 // connecting to pizza model
 use crate::models::{ BuyPizzaRequest, UpdatePizzaUrl, Pizza };
+//surreal start file:pizzashop2.db --user root --password root
 
 // getting pizzas
 #[get("/pizzas")]
@@ -26,12 +19,15 @@ async fn get_pizzas(db: Data<Database>) -> impl Responder {
     // fetched form surreal db
     let pizzas = db.get_all_pizza().await;
     match pizzas {
-        Some(found_pizzas) => HttpResponse::Ok().body(format!("{:?}", found_pizzas)),
-        None => HttpResponse::Ok().body("No pizzas found"),
+        Some(found_pizzas) => {
+            let parsed_pizzas: Vec<Pizza> = found_pizzas.to_vec();
+            HttpResponse::Ok().json(parsed_pizzas)
+        },
+        None => HttpResponse::Ok().body("No pizzas found")
     }
 }
 
-// post pizzas
+// post pizzas directly to the sql database 
 #[post("/buy")]
 async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Responder {
     let is_valid = body.validate();
@@ -54,6 +50,7 @@ async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Resp
     }
 }
 
+
 // patching with a random uuid passed for editing
 #[patch("/updatepizza/{uuid}")]
 async fn update_pizza(update_pizza_url: Path<UpdatePizzaUrl>) -> impl Responder {
@@ -65,7 +62,6 @@ async fn update_pizza(update_pizza_url: Path<UpdatePizzaUrl>) -> impl Responder 
 async fn main() -> std::io::Result<()> {
     // initialising a new database
     let db = Database::init().await.expect("error in database");
-    db.add_dummy_pizza().await; // adding dummy list of pizzas
     let db_data = Data::new(db);
 
     // creating a basic server

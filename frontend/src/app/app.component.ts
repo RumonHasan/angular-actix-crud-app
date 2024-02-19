@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AppService } from './app.component.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -7,7 +8,11 @@ import { Component, OnInit } from '@angular/core';
 export class AppComponent implements OnInit {
   public pizzas: any = [];
 
-  ngOnInit(): void {}
+  constructor(private apiService: AppService) {}
 
-  constructor() {}
+  ngOnInit(): void {
+    this.pizzas = this.apiService.getData().subscribe((data) => {
+      console.log(data.json);
+    });
+  }
 }

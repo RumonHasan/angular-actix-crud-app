@@ -21,17 +21,17 @@ impl Database {
             username: "root",
             password: "root",
         }).await?;
-        client.use_ns("surreal").use_db("pizzas").await.unwrap();
+        client.use_ns("surreal").use_db("pizza_new").await.unwrap();
         Ok(Database {
             client,
             name_space: String::from("surreal"),
-            db_name: String::from("pizzas"),
+            db_name: String::from("pizza_new"),
         })
     }
 
     // this returns a option contained vector of pizzas
     pub async fn get_all_pizza(&self) -> Option<Vec<Pizza>> {
-        let result = self.client.select("pizza").await;
+        let result = self.client.select("pizza_new").await;
         match result {
             Ok(all_pizzas) => Some(all_pizzas),
             Err(_) => None,
@@ -41,7 +41,7 @@ impl Database {
     // adding a pizza
     pub async fn add_pizza(&self, new_pizza: Pizza) -> Option<Pizza> {
         let created_pizza = self.client
-            .create(("pizza", new_pizza.uuid.clone()))
+            .create(("pizza_new", new_pizza.uuid.clone()))
             .content(new_pizza).await;
         match created_pizza {
             Ok(created) => { created }

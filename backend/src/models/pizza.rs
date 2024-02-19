@@ -17,7 +17,7 @@ pub struct UpdatePizzaUrl{
 }
 
 // struct for pizza
-#[derive(Validate, Deserialize, Serialize, Debug)]
+#[derive(Validate, Deserialize, Serialize, Debug, Clone)]
 pub struct Pizza{
     pub uuid: String,
     pub pizza_name: String
