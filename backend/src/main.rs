@@ -1,5 +1,14 @@
 use actix_web::{
-    delete, get, http, patch, post, web::{ self, Data, Json, Path }, App, HttpResponse, HttpServer, Responder
+    delete,
+    get,
+    http,
+    patch,
+    post,
+    web::{ self, Data, Json, Path },
+    App,
+    HttpResponse,
+    HttpServer,
+    Responder,
 };
 use actix_cors::Cors;
 use validator::Validate;
@@ -7,10 +16,17 @@ use uuid::{ self };
 // models
 mod models;
 mod db;
+
 // conneting to db
 use crate::db::Database;
 // connecting to pizza model
-use crate::models::{ BuyPizzaRequest, UpdatePizzaUrl, Pizza };
+use crate::models::{
+    BuyPizzaRequest,
+    UpdatePizzaUrl,
+    Pizza,
+    DeletePizzaUrl,
+    DeletePizzaResponse,
+};
 //surreal start file:pizzashop2.db --user root --password root
 
 // getting pizzas
@@ -18,16 +34,17 @@ use crate::models::{ BuyPizzaRequest, UpdatePizzaUrl, Pizza };
 async fn get_pizzas(db: Data<Database>) -> impl Responder {
     // fetched form surreal db
     let pizzas = db.get_all_pizza().await;
+    //after finding its changing it to vec
     match pizzas {
         Some(found_pizzas) => {
             let parsed_pizzas: Vec<Pizza> = found_pizzas.to_vec();
             HttpResponse::Ok().json(parsed_pizzas)
-        },
-        None => HttpResponse::Ok().body("No pizzas found")
+        }
+        None => HttpResponse::Ok().body("No pizzas found"),
     }
 }
 
-// post pizzas directly to the sql database 
+// post pizzas directly to the sql database
 #[post("/buy")]
 async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Responder {
     let is_valid = body.validate();
@@ -50,6 +67,23 @@ async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Resp
     }
 }
 
+// route to delete a single pizza from the collection
+#[delete("/delete_pizza/{uuid}")]
+async fn delete_pizza(delete_url: Path<DeletePizzaUrl>, db: Data<Database>) -> impl Responder {
+    let delete_uuid = delete_url.into_inner().uuid;
+    let deleted_pizza = db.delete_pizza(&delete_uuid).await;
+    match deleted_pizza {
+        Some(deleted) => {
+            // here for the frontend json needs to be returned in for deletion
+            let delete_pizza_reponse = DeletePizzaResponse {
+                deleted_item: deleted.to_owned(),
+                delete_message: "Undo Delete",
+            };
+            HttpResponse::Ok().json(delete_pizza_reponse)
+        }
+        None => HttpResponse::Ok().json("Item has failed to be deleted"),
+    }
+}
 
 // patching with a random uuid passed for editing
 #[patch("/updatepizza/{uuid}")]
@@ -84,6 +118,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_pizzas)
             .service(update_pizza)
             .service(buy_pizza)
+            .service(delete_pizza)
     })
         .bind("127.0.0.1:8080")?
         .run().await;

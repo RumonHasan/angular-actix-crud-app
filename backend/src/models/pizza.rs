@@ -16,6 +16,18 @@ pub struct UpdatePizzaUrl{
     pub uuid: String,
 }
 
+#[derive(Validate, Serialize, Deserialize, Debug)]
+pub struct DeletePizzaUrl{
+    pub uuid: String,
+}
+
+// delete pizza response
+#[derive(Validate, Serialize, Deserialize, Debug)]
+pub struct DeletePizzaResponse{
+    pub deleted_item : Pizza,
+    pub delete_message:&'static str,
+}
+
 // struct for pizza
 #[derive(Validate, Deserialize, Serialize, Debug, Clone)]
 pub struct Pizza{

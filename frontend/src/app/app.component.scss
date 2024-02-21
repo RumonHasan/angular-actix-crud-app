@@ -5,5 +5,24 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+
+
+    .card-container{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 16px;
+      height:auto;
+      width: 1500px;
+      overflow: auto;
+
+      .card{
+        width: 500px;
+        border-radius: 10px;
+      }
+    }
   }
 }

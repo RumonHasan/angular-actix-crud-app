@@ -4,6 +4,7 @@ use surrealdb::{ Error, Surreal };
 use uuid;
 
 use crate::models::pizza::Pizza;
+use crate::models::{ DeletePizzaUrl, Task };
 
 #[derive(Clone)]
 pub struct Database {
@@ -48,6 +49,28 @@ impl Database {
             Err(_) => None,
         }
     }
+
+    // delete piza
+    pub async fn delete_pizza(&self, delete_id: &String) -> Option<Pizza> {
+        let delete_pizza_id = delete_id.to_string();
+        let deleted_pizza = self.client.delete(("pizza_new", delete_pizza_id)).await;
+        match deleted_pizza {
+            Ok(deleted) => { deleted }
+            Err(_) => None,
+        }
+    }
+
+    // add a new task to the new task collection
+    pub async fn add_task(&self, new_task: Task) -> Option<Task> {
+        let created_task = self.client
+            .create(("tasks", new_task.uuid.clone()))
+            .content(new_task).await;
+        match created_task {
+            Ok(created) => { created }
+            Err(_) => None,
+        }
+    }
+
     // adding dummy pizzas
     pub async fn add_dummy_pizza(&self) {
         let pizza_counter = 10;
