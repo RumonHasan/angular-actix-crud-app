@@ -1,4 +1,3 @@
-use actix_web::Resource;
 use surrealdb::engine::remote::ws::{ Client, Ws };
 use surrealdb::opt::auth::Root;
 use futures::stream::StreamExt; // Import the StreamExt trait
@@ -48,6 +47,17 @@ impl Database {
             .content(new_pizza).await;
         match created_pizza {
             Ok(created) => { created }
+            Err(_) => None,
+        }
+    }
+    // updating the pizza
+    pub async fn update_pizza(&self, update_id: &String, updated_pizza: String) -> Option<Pizza> {
+        let updated_pizza = self.client.update(("pizza_new", update_id)).merge(Pizza {
+            uuid: update_id.to_string(),
+            pizza_name: updated_pizza,
+        }).await;
+        match updated_pizza {
+            Ok(updated) => { updated }
             Err(_) => None,
         }
     }

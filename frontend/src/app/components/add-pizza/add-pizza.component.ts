@@ -35,7 +35,10 @@ export class AddPizzaComponent implements OnInit {
         .subscribe((data) => {
           if (data) {
             const { created_pizza, created_message } = data;
-            this.snackbar.open(created_pizza.pizza_name, created_message);
+            this.snackbar.open(created_pizza.pizza_name, created_message, {
+              duration: 3000,
+            });
+            // switching back to show pizza when pizza has been created
             this.router.navigate(['/show'], {
               relativeTo: this.activeRoute,
             });

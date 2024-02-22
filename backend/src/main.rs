@@ -1,4 +1,5 @@
 use actix_web::{
+    body,
     delete,
     get,
     http,
@@ -26,7 +27,7 @@ use crate::models::{
     Pizza,
     DeletePizzaUrl,
     DeletePizzaResponse,
-    CreatedPizzaResponse
+    CreatedPizzaResponse,
 };
 //surreal start file:pizzashop2.db --user root --password root
 
@@ -59,13 +60,13 @@ async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Resp
             ).await;
             match new_pizza {
                 Some(created) => {
-                    let created_success_response = CreatedPizzaResponse{
+                    let created_success_response = CreatedPizzaResponse {
                         created_pizza: created,
-                        created_message: "Pizza Has Been Created"
+                        created_message: "Pizza Has Been Created",
                     };
                     HttpResponse::Ok().json(created_success_response)
                 }
-                None => HttpResponse::Ok().json("Unable to create the pizza")
+                None => HttpResponse::Ok().json("Unable to create the pizza"),
             }
         }
         Err(_) => { HttpResponse::Ok().body("pizza name is required") }
@@ -92,9 +93,18 @@ async fn delete_pizza(delete_url: Path<DeletePizzaUrl>, db: Data<Database>) -> i
 
 // patching with a random uuid passed for editing
 #[patch("/updatepizza/{uuid}")]
-async fn update_pizza(update_pizza_url: Path<UpdatePizzaUrl>) -> impl Responder {
+async fn update_pizza(
+    update_pizza_url: Path<UpdatePizzaUrl>,
+    body: Json<BuyPizzaRequest>,
+    db: Data<Database>
+) -> impl Responder {
+    let updated_pizza_name = body.into_inner();
     let uuid = update_pizza_url.into_inner().uuid;
-    HttpResponse::Ok().body(format!("udating the pizza with this {uuid}"))
+    let updated_pizza = db.update_pizza(&uuid, updated_pizza_name.pizza_name.clone()).await;
+    match updated_pizza {
+        Some(updated) => { HttpResponse::Ok().json(updated) }
+        None => HttpResponse::Ok().json("Failed to update"),
+    }
 }
 
 #[actix_web::main]
