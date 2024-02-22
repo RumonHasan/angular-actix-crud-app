@@ -1,10 +1,12 @@
+use actix_web::Resource;
 use surrealdb::engine::remote::ws::{ Client, Ws };
 use surrealdb::opt::auth::Root;
+use futures::stream::StreamExt; // Import the StreamExt trait
 use surrealdb::{ Error, Surreal };
 use uuid;
 
 use crate::models::pizza::Pizza;
-use crate::models::{ DeletePizzaUrl, Task };
+use crate::models::Task;
 
 #[derive(Clone)]
 pub struct Database {
@@ -34,7 +36,7 @@ impl Database {
     pub async fn get_all_pizza(&self) -> Option<Vec<Pizza>> {
         let result = self.client.select("pizza_new").await;
         match result {
-            Ok(all_pizzas) => Some(all_pizzas),
+            Ok(all_pizzas) => { Some(all_pizzas) }
             Err(_) => None,
         }
     }

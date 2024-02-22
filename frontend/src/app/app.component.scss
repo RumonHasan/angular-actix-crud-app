@@ -8,21 +8,49 @@
     flex-direction: column;
     overflow: hidden;
 
-
-    .card-container{
+    .card-container {
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
       gap: 16px;
-      height:auto;
-      width: 1500px;
-      overflow: auto;
+      max-height: 600px; /* Adjust max-height based on your preference */
+      width: 80%; /* Adjust width based on your design */
+      overflow-y: auto; /* Enable vertical scrollbar when content exceeds max-height */
 
-      .card{
-        width: 500px;
+      .card {
+        width: 100%;
         border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+        box-sizing: border-box; /* Include padding and border in the total width and height */
+
+        &:hover {
+          transform: scale(1.02);
+        }
+
+        .mat-card-content {
+          padding: 16px;
+          margin: 0; /* Ensure no margin */
+          box-sizing: border-box; /* Include padding in the total width and height */
+        }
+
+        .mat-card-actions {
+          display: flex;
+          justify-content: flex-end;
+          padding: 16px;
+          margin: 0; /* Ensure no margin */
+          box-sizing: border-box; /* Include padding in the total width and height */
+
+          button {
+            margin-left: 8px;
+          }
+        }
       }
+    }
+
+    .add-pizza {
+      margin-top: 16px;
     }
   }
 }

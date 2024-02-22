@@ -28,6 +28,12 @@ pub struct DeletePizzaResponse{
     pub delete_message:&'static str,
 }
 
+#[derive(Validate, Serialize, Deserialize)]
+pub struct CreatedPizzaResponse{
+    pub created_pizza: Pizza,
+    pub created_message: &'static str
+}
+
 // struct for pizza
 #[derive(Validate, Deserialize, Serialize, Debug, Clone)]
 pub struct Pizza{

@@ -4,7 +4,7 @@ use actix_web::{
     http,
     patch,
     post,
-    web::{ self, Data, Json, Path },
+    web::{ Data, Json, Path },
     App,
     HttpResponse,
     HttpServer,
@@ -26,6 +26,7 @@ use crate::models::{
     Pizza,
     DeletePizzaUrl,
     DeletePizzaResponse,
+    CreatedPizzaResponse
 };
 //surreal start file:pizzashop2.db --user root --password root
 
@@ -58,9 +59,13 @@ async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Resp
             ).await;
             match new_pizza {
                 Some(created) => {
-                    HttpResponse::Ok().body(format!("Created New Pizza, {:?}", created))
+                    let created_success_response = CreatedPizzaResponse{
+                        created_pizza: created,
+                        created_message: "Pizza Has Been Created"
+                    };
+                    HttpResponse::Ok().json(created_success_response)
                 }
-                None => HttpResponse::Ok().body("Error buying em"),
+                None => HttpResponse::Ok().json("Unable to create the pizza")
             }
         }
         Err(_) => { HttpResponse::Ok().body("pizza name is required") }

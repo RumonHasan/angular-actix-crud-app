@@ -4,5 +4,6 @@ pub use pizza::BuyPizzaRequest;
 pub use pizza::UpdatePizzaUrl;
 pub use pizza::DeletePizzaUrl;
 pub use pizza::DeletePizzaResponse;
+pub use pizza::CreatedPizzaResponse;
 pub mod tasks;
 pub use tasks::Task;

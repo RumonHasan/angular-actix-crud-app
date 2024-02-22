@@ -1,0 +1,14 @@
+<div>
+  <button mat-button routerLink="/show" color="primary">Go Back</button>
+  <mat-form-field>
+    <input
+      matInput
+      placeholder="Enter your value"
+      [value]="pizza_name"
+      name="inputField"
+      required
+    />
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" (click)="onSubmit()">Submit</button>
+</div>
