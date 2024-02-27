@@ -23,6 +23,7 @@ impl Database {
             username: "root",
             password: "root",
         }).await?;
+        // creates or uses the same db
         client.use_ns("surreal").use_db("pizza_new").await.unwrap();
         Ok(Database {
             client,
