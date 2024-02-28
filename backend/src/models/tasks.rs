@@ -21,6 +21,13 @@ pub struct Comment{
     pub comment: String
 }
 
+// validating task
+#[derive(Serialize, Deserialize, Validate)]
+pub struct ValidateCreateTask{
+    #[validate(length(min = 1, message = "task name needs to have atleast one char"))]
+    pub task_name: String,
+}
+
 // implementing task
 impl Task{
    pub fn new_task(uuid: String, task_name: String, status: bool, comments: Vec<Comment>)-> Task{

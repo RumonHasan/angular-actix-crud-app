@@ -28,6 +28,8 @@ use crate::models::{
     DeletePizzaUrl,
     DeletePizzaResponse,
     CreatedPizzaResponse,
+    ValidateCreateTask,
+    Task,
 };
 //surreal start file:pizzashop2.db --user root --password root
 
@@ -43,6 +45,38 @@ async fn get_pizzas(db: Data<Database>) -> impl Responder {
             HttpResponse::Ok().json(parsed_pizzas)
         }
         None => HttpResponse::Ok().body("No pizzas found"),
+    }
+}
+
+// post a new task the collection of tasks in rust
+#[post("/add-task")]
+async fn add_task(body: Json<ValidateCreateTask>, db: Data<Database>) -> impl Responder {
+    let is_valid = body.validate();
+    match is_valid {
+        Ok(_) => {
+            let task_name: String = body.task_name.clone();
+            let mut buffer = uuid::Uuid::encode_buffer();
+            let new_uuid = uuid::Uuid::new_v4().simple().encode_lower(&mut buffer);
+            let new_task: Task = Task {
+                uuid: new_uuid.to_string(),
+                task_name,
+                status: false, // by default the task is set to false
+                comments: Vec::new(),
+            };
+            let added_new_task = db.add_task(
+                Task::new_task(
+                    new_task.uuid,
+                    new_task.task_name,
+                    new_task.status,
+                    new_task.comments
+                )
+            ).await;
+            match added_new_task {
+                Some(created_new_task) => { HttpResponse::Ok().json(created_new_task) }
+                None => HttpResponse::Ok().json("Task failed to create within the colletion"),
+            }
+        }
+        Err(_) => { HttpResponse::Ok().body("new task is invalid") }
     }
 }
 
@@ -134,6 +168,7 @@ async fn main() -> std::io::Result<()> {
             .service(update_pizza)
             .service(buy_pizza)
             .service(delete_pizza)
+            .service(add_task)
     })
         .bind("127.0.0.1:8080")?
         .run().await;

@@ -23,7 +23,7 @@
   bytes_per_sync=0
   delayed_write_rate=16777216
   max_background_compactions=-1
-  max_background_jobs=12
+  max_background_jobs=8
   delete_obsolete_files_period_micros=21600000000
   writable_file_max_buffer_size=1048576
   file_checksum_gen_factory=nullptr

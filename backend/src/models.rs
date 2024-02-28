@@ -7,3 +7,4 @@ pub use pizza::DeletePizzaResponse;
 pub use pizza::CreatedPizzaResponse;
 pub mod tasks;
 pub use tasks::Task;
+pub use tasks::ValidateCreateTask;

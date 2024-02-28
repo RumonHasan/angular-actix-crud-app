@@ -1,6 +1,5 @@
 use surrealdb::engine::remote::ws::{ Client, Ws };
 use surrealdb::opt::auth::Root;
-use futures::stream::StreamExt; // Import the StreamExt trait
 use surrealdb::{ Error, Surreal };
 use uuid;
 
@@ -41,6 +40,26 @@ impl Database {
         }
     }
 
+    // general function to get all tasks from the collection of tasks
+    pub async fn get_all_task(&self) -> Option<Vec<Task>> {
+        let result_tasks = self.client.select("tasks").await;
+        match result_tasks {
+            Ok(all_tasks) => { Some(all_tasks) }
+            Err(_) => None,
+        }
+    }
+
+    // adding a new task to the task collection
+    pub async fn create_new_task(&self, new_task: Task) -> Option<Task> {
+        let created_tasks = self.client
+            .create(("tasks", new_task.uuid.clone()))
+            .content(new_task).await;
+        match created_tasks {
+            Ok(created) => { created }
+            Err(_) => None,
+        }
+    }
+
     // adding a pizza
     pub async fn add_pizza(&self, new_pizza: Pizza) -> Option<Pizza> {
         let created_pizza = self.client
@@ -73,7 +92,7 @@ impl Database {
         }
     }
 
-    // add a new task to the new task collection
+    // add a new task to the new task collection in the database
     pub async fn add_task(&self, new_task: Task) -> Option<Task> {
         let created_task = self.client
             .create(("tasks", new_task.uuid.clone()))
