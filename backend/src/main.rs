@@ -30,6 +30,9 @@ use crate::models::{
     CreatedPizzaResponse,
     ValidateCreateTask,
     Task,
+    ValidateComment,
+    Comment,
+    VerifyTaskId,
 };
 //surreal start file:pizzashop2.db --user root --password root
 
@@ -45,6 +48,48 @@ async fn get_pizzas(db: Data<Database>) -> impl Responder {
             HttpResponse::Ok().json(parsed_pizzas)
         }
         None => HttpResponse::Ok().body("No pizzas found"),
+    }
+}
+
+// getting all tasks
+#[get("/tasks")]
+async fn get_tasks(db: Data<Database>) -> impl Responder {
+    let tasks = db.get_all_task().await;
+    match tasks {
+        Some(found_tasks) => {
+            let parsed_tasks: Vec<Task> = found_tasks.to_vec();
+            HttpResponse::Ok().json(parsed_tasks)
+        }
+        None => HttpResponse::Ok().body("Tasks unable to be retrieved at this time"),
+    }
+}
+
+// adding comment to a particular task based on the id of the task
+#[post("/add-comment/{uuid}")]
+async fn add_comment_to_task(
+    uuid: Path<VerifyTaskId>,
+    body: Json<ValidateComment>,
+    db: Data<Database>
+) -> impl Responder {
+    let task_id = uuid.into_inner().uuid;
+    let is_valid = body.validate();
+    match is_valid {
+        Ok(_) => {
+            let comment_name: String = body.comment.clone();
+            let mut buffer = uuid::Uuid::encode_buffer();
+            let new_uuid = uuid::Uuid::new_v4().simple().encode_lower(&mut buffer);
+            let new_commented_task = db.create_new_comment(
+                Task::new_comment(new_uuid.to_string(), comment_name),
+                &task_id
+            );
+            match new_commented_task.await {
+                Some(found_new_task) => { 
+                    // update the exising data
+                    HttpResponse::Ok().json(found_new_task) }
+                None => HttpResponse::Ok().body("No Comment Has been added"),
+            }
+        }
+        Err(_) => { HttpResponse::Ok().body("Comment cannot be added") }
     }
 }
 
@@ -169,6 +214,8 @@ async fn main() -> std::io::Result<()> {
             .service(buy_pizza)
             .service(delete_pizza)
             .service(add_task)
+            .service(get_tasks)
+            .service(add_comment_to_task)
     })
         .bind("127.0.0.1:8080")?
         .run().await;

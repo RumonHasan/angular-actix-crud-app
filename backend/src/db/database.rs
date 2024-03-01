@@ -4,7 +4,7 @@ use surrealdb::{ Error, Surreal };
 use uuid;
 
 use crate::models::pizza::Pizza;
-use crate::models::Task;
+use crate::models::{ Comment, Task };
 
 #[derive(Clone)]
 pub struct Database {
@@ -59,6 +59,33 @@ impl Database {
             Err(_) => None,
         }
     }
+
+    // adding a new comment to the existing task after finding it based on task id
+    pub async fn create_new_comment(
+        &self,
+        new_comment: Comment,
+        update_id: &String
+    ) -> Option<Task> {
+        let task_id: String = update_id.to_string();
+        let old_tasks = self.client.select("tasks").await;
+        match old_tasks {
+            Ok(all_tasks) => {
+                let task_found = all_tasks
+                    .iter()
+                    .find(|task: &&Task| task.uuid.to_string() == task_id)
+                    .map(|curr_task| {
+                        let mut temp_task = curr_task.clone();
+                        temp_task.comments.push(new_comment);
+                        temp_task
+                    });
+                let new_task = task_found.map(|task| task.clone());
+                new_task
+            }
+            Err(_) => None,
+        }
+    }
+
+    // update the existing data of tasks
 
     // adding a pizza
     pub async fn add_pizza(&self, new_pizza: Pizza) -> Option<Pizza> {

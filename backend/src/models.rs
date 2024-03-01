@@ -8,3 +8,6 @@ pub use pizza::CreatedPizzaResponse;
 pub mod tasks;
 pub use tasks::Task;
 pub use tasks::ValidateCreateTask;
+pub use tasks::ValidateComment;
+pub use tasks::VerifyTaskId;
+pub use tasks::Comment;
