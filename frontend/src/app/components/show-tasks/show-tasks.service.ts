@@ -12,6 +12,7 @@ export class ShowTaskService {
     pizzas: 'pizzas',
     tasks: 'get_tasks',
     deletePizza: 'delete_pizza',
+    addComment: 'add-comment',
   };
 
   constructor(private httpClient: HttpClient, private snackbar: MatSnackBar) {}
@@ -34,6 +35,19 @@ export class ShowTaskService {
           `${deleted_item.pizza_name} has been deleted successfully`,
           delete_message
         );
+      });
+  }
+  // adding comment to post
+  addCommentToTask(task_id: any) {
+    return this.httpClient
+      .post<any>(
+        `${this.apiUrl}/${this.route_variables.addComment}/${task_id}`,
+        {
+          comment: 'test comment',
+        }
+      )
+      .subscribe((data) => {
+        console.log(data);
       });
   }
 }

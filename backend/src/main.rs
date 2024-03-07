@@ -86,7 +86,7 @@ async fn add_comment_to_task(
                 Some(found_new_task) => { 
                     // update the exising data
                     HttpResponse::Ok().json(found_new_task) }
-                None => HttpResponse::Ok().body("No Comment Has been added"),
+                None => HttpResponse::Ok().json("comment cannot be added here"),
             }
         }
         Err(_) => { HttpResponse::Ok().body("Comment cannot be added") }

@@ -94,7 +94,6 @@ impl Database {
             None
         }
     }
-
     // update the existing data of tasks
 
     // adding a pizza
