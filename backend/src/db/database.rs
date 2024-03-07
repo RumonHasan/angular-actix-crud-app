@@ -49,17 +49,6 @@ impl Database {
         }
     }
 
-    // adding a new task to the task collection
-    pub async fn create_new_task(&self, new_task: Task) -> Option<Task> {
-        let created_tasks = self.client
-            .create(("tasks", new_task.uuid.clone()))
-            .content(new_task).await;
-        match created_tasks {
-            Ok(created) => { created }
-            Err(_) => None,
-        }
-    }
-
     // adding a new comment to the existing task after finding it based on task id
     pub async fn create_new_comment(
         &self,
@@ -78,10 +67,31 @@ impl Database {
                         temp_task.comments.push(new_comment);
                         temp_task
                     });
-                let new_task = task_found.map(|task| task.clone());
-                new_task
+                // updating the tasks after
+                self.update_tasks(task_found.clone()).await;
+                task_found
+                // here the new task should be updated with the database ¥
             }
             Err(_) => None,
+        }
+    }
+
+    // updating existing tasks from the surreal database series
+    pub async fn update_tasks(&self, new_task: Option<Task>) -> Option<Vec<Task>> {
+        if let Some(task_found) = new_task {
+            let found_task_id = task_found.uuid.to_string();
+            let older_tasks = self.client.update(("tasks", &found_task_id)).merge(Task {
+                uuid: found_task_id.to_string(),
+                status: task_found.status,
+                task_name: task_found.task_name,
+                comments: task_found.comments,
+            }).await;
+            match older_tasks {
+                Ok(tasks) => { tasks }
+                Err(_) => None,
+            }
+        } else {
+            None
         }
     }
 

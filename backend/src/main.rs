@@ -117,7 +117,9 @@ async fn add_task(body: Json<ValidateCreateTask>, db: Data<Database>) -> impl Re
                 )
             ).await;
             match added_new_task {
-                Some(created_new_task) => { HttpResponse::Ok().json(created_new_task) }
+                Some(created_new_task) => { 
+                    // returning the new task after adding a new comment
+                    HttpResponse::Ok().json(created_new_task) }
                 None => HttpResponse::Ok().json("Task failed to create within the colletion"),
             }
         }
